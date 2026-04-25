@@ -227,7 +227,7 @@ function exportExcel(results, totals, company, period, policy) {
     ["Bonus/THR",  policy.bonus?"DITUNJANG":"TIDAK DITUNJANG"],
     [],
     ["Referensi Regulasi","PMK 168/2023 — Metode TER"],
-    ["Dicetak oleh","PajakKu HR Edition"],
+    ["Dicetak oleh","Mamuyy PPh 21"],
     ["Tanggal cetak", new Date().toLocaleDateString("id-ID")],
   ];
   const ws3 = XLSX.utils.aoa_to_sheet(exec);
@@ -982,8 +982,8 @@ export default function App() {
       <div style={C.hdr}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
           <div>
-            <div style={C.logoTxt}>PajakKu <em style={{fontStyle:"normal",color:"#34d399",fontSize:13}}>HR Edition</em></div>
-            <div style={{fontSize:11,color:"#6b7fa3"}}>Metode TER (PMK 168/2023) & Pasal 17</div>
+            <div style={C.logoTxt}>Mamuyy <em style={{fontStyle:"normal",color:"#34d399",fontSize:13}}>PPh 21</em></div>
+            <div style={{fontSize:11,color:"#6b7fa3"}}>HR Edition · TER (PMK 168/2023) & Pasal 17</div>
           </div>
         </div>
       </div>
@@ -1515,7 +1515,7 @@ export default function App() {
           </div>
         )}
       </div>
-      <div style={{fontSize:10,color:"#111d2a",textAlign:"center",marginTop:24,paddingBottom:8}}>© 2026 PajakKu HR Edition · PMK 168/2023 · Alat bantu payroll internal · Bukan bukti potong resmi (1721-A1)</div>
+      <div style={{fontSize:10,color:"#111d2a",textAlign:"center",marginTop:24,paddingBottom:8}}>© 2026 Mamuyy PPh 21 · PMK 168/2023 · Alat bantu payroll internal · Bukan bukti potong resmi (1721-A1)</div>
     </div>
   );
 }

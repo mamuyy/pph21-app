@@ -1,4 +1,4 @@
-# PajakKu HR Edition
+# Mamuyy PPh 21
 
 Aplikasi React + Vite untuk simulasi dan rekonsiliasi PPh 21 payroll internal.
 
@@ -53,7 +53,7 @@ Langkah umum:
 ## Struktur Project
 
 ```text
-pph21-app/
+mamuyy-pph21/
 ├─ src/
 │  ├─ App.jsx
 │  └─ main.jsx
