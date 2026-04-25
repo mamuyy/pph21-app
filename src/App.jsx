@@ -669,6 +669,37 @@ function buildSettlementSummary(results) {
   };
 }
 
+function buildSettlementBreakdown(results) {
+  const employeeRefundRows = results
+    .filter((r) => num(r.pphK) < 0)
+    .map((r) => ({
+      id: r.id,
+      nama: r.nama,
+      status: r.status,
+      amount: Math.abs(num(r.pphK)),
+      pphMasaIni: num(r.pphTotal)
+    }))
+    .sort((a, b) => b.amount - a.amount);
+
+  const companyRefundRows = results
+    .filter((r) => num(r.pphP) < 0)
+    .map((r) => ({
+      id: r.id,
+      nama: r.nama,
+      status: r.status,
+      amount: Math.abs(num(r.pphP)),
+      pphMasaIni: num(r.pphTotal)
+    }))
+    .sort((a, b) => b.amount - a.amount);
+
+  return {
+    employeeRefundRows,
+    companyRefundRows,
+    employeeRefundCount: employeeRefundRows.length,
+    companyRefundCount: companyRefundRows.length
+  };
+}
+
 function buildComparisonSummary(results) {
   const withExcel = results.filter((r) => num(r.pphExcel) !== 0);
   const compared = withExcel.length;
@@ -843,6 +874,17 @@ export default function App() {
   const visibleComparison = useMemo(() => filterComparisonSummary(comparison, search), [comparison, search]);
   const taxPosition = useMemo(() => (results ? buildTaxPositionSummary(results) : null), [results]);
   const settlement = useMemo(() => (results ? buildSettlementSummary(results) : null), [results]);
+  const settlementBreakdown = useMemo(() => {
+    if (!results || mode !== "final") return null;
+    const source = buildSettlementBreakdown(results);
+    const s = String(search || "").toLowerCase().trim();
+    if (!s) return source;
+    return {
+      ...source,
+      employeeRefundRows: source.employeeRefundRows.filter((r) => r.nama.toLowerCase().includes(s)),
+      companyRefundRows: source.companyRefundRows.filter((r) => r.nama.toLowerCase().includes(s)),
+    };
+  }, [results, mode, search]);
 
   const doExport = () => {
     if(!results||!totals) return;
@@ -1442,6 +1484,51 @@ export default function App() {
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+            {mode === "final" && settlement && settlementBreakdown && (
+              <div style={{...C.infoBox, marginBottom: 12}}>
+                <div style={{fontSize:10,fontWeight:700,color:"#6b7fa3",letterSpacing:"1.2px",marginBottom:8}}>
+                  REKAP PENGEMBALIAN (REFUND)
+                </div>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(320px, 1fr))",gap:10}}>
+                  {[
+                    ["Refund ke Pribadi / Ybs", settlement.employeeRefund, settlementBreakdown.employeeRefundCount, settlementBreakdown.employeeRefundRows, "#86efac"],
+                    ["Refund ke Perusahaan", settlement.companyRefund, settlementBreakdown.companyRefundCount, settlementBreakdown.companyRefundRows, "#93c5fd"],
+                  ].map(([title, totalValue, count, rows, color]) => (
+                    <div key={title} style={{background:"rgba(0,0,0,0.2)",borderRadius:10,padding:10,border:"1px solid rgba(255,255,255,0.06)"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"baseline",marginBottom:8}}>
+                        <div style={{fontSize:11,fontWeight:700,color:"#e8eaf0"}}>{title}</div>
+                        <div style={{fontSize:12,fontWeight:800,color}}>{rp(totalValue)}</div>
+                      </div>
+                      <div style={{fontSize:10,color:"#6b7fa3",marginBottom:8}}>
+                        {count} pegawai
+                        {search ? ` · hasil pencarian: ${rows.length}` : ""}
+                      </div>
+                      <div style={{maxHeight:180,overflowY:"auto",borderTop:"1px solid rgba(255,255,255,0.06)",paddingTop:8}}>
+                        {(rows.length ? rows.slice(0, 30) : []).map((r) => (
+                          <div key={`${title}-${r.id}`} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,padding:"6px 0",borderBottom:"1px dashed rgba(255,255,255,0.05)"}}>
+                            <div style={{fontSize:11,color:"#cbd5e1"}}>
+                              <div style={{fontWeight:600,color:"#e8eaf0"}}>{r.nama}</div>
+                              <div style={{fontSize:10,color:"#6b7fa3"}}>{r.status} · PPh Masa Ini {rpSigned(r.pphMasaIni)}</div>
+                            </div>
+                            <div style={{fontSize:11,fontWeight:700,color,textAlign:"right"}}>{rp(r.amount)}</div>
+                          </div>
+                        ))}
+                        {!rows.length && (
+                          <div style={{fontSize:10,color:"#6b7fa3",padding:"6px 0"}}>
+                            Tidak ada data refund pada kategori ini.
+                          </div>
+                        )}
+                        {rows.length > 30 && (
+                          <div style={{fontSize:10,color:"#6b7fa3",paddingTop:6}}>
+                            Menampilkan 30 baris teratas dari {rows.length} data.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             {visibleComparison && comparison && comparison.compared > 0 && (
