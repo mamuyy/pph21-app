@@ -241,6 +241,69 @@ function exportExcel(results, totals, company, period, policy) {
   XLSX.writeFile(wb, `PPh21_${company.replace(/\s+/g,"_")}_${period.replace(/\s+/g,"_")}.xlsx`);
 }
 
+function exportSettlementExcel(results, company, period) {
+  const wb = XLSX.utils.book_new();
+  const safeCompany = company.replace(/\s+/g, "_");
+  const safePeriod = period.replace(/\s+/g, "_");
+
+  const refundYbsRows = results
+    .filter((r) => num(r.pphK) < 0)
+    .map((r, i) => ({
+      No: i + 1,
+      Nama: r.nama,
+      Status: r.status,
+      "Refund ke Ybs": Math.abs(num(r.pphK)),
+      "PPh Masa Terakhir": num(r.pphTotal),
+      "PPh Setahun": num(r.annualPphTotal),
+      "PPh s.d. Lalu": num(r.pphSebelumnya),
+    }));
+
+  const refundPerusahaanRows = results
+    .filter((r) => num(r.pphP) < 0)
+    .map((r, i) => ({
+      No: i + 1,
+      Nama: r.nama,
+      Status: r.status,
+      "Refund ke Perusahaan": Math.abs(num(r.pphP)),
+      "PPh Masa Terakhir": num(r.pphTotal),
+      "PPh Setahun": num(r.annualPphTotal),
+      "PPh s.d. Lalu": num(r.pphSebelumnya),
+    }));
+
+  const totalRefundYbs = refundYbsRows.reduce((s, r) => s + num(r["Refund ke Ybs"]), 0);
+  const totalRefundPerusahaan = refundPerusahaanRows.reduce((s, r) => s + num(r["Refund ke Perusahaan"]), 0);
+
+  const summary = [
+    ["REKAP SETTLEMENT INTERNAL PPh 21"],
+    [`Perusahaan: ${company}`],
+    [`Periode: ${period}`],
+    [`Dicetak: ${new Date().toLocaleString("id-ID")}`],
+    [],
+    ["Keterangan", "Jumlah Pegawai", "Nominal"],
+    ["Refund ke Ybs", refundYbsRows.length, totalRefundYbs],
+    ["Refund ke Perusahaan", refundPerusahaanRows.length, totalRefundPerusahaan],
+    ["Total Refund", "", totalRefundYbs + totalRefundPerusahaan],
+  ];
+  const wsSummary = XLSX.utils.aoa_to_sheet(summary);
+  wsSummary["!cols"] = [{ wch: 30 }, { wch: 18 }, { wch: 20 }];
+  wsSummary["!merges"] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
+  XLSX.utils.book_append_sheet(wb, wsSummary, "Ringkasan Settlement");
+
+  const wsYbs = XLSX.utils.json_to_sheet(refundYbsRows.length ? refundYbsRows : [{ Info: "Tidak ada data refund ke ybs." }]);
+  wsYbs["!cols"] = [
+    { wch: 6 }, { wch: 28 }, { wch: 10 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 16 }
+  ];
+  XLSX.utils.book_append_sheet(wb, wsYbs, "Refund ke Ybs");
+
+  const wsPerusahaan = XLSX.utils.json_to_sheet(refundPerusahaanRows.length ? refundPerusahaanRows : [{ Info: "Tidak ada data refund ke perusahaan." }]);
+  wsPerusahaan["!cols"] = [
+    { wch: 6 }, { wch: 28 }, { wch: 10 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 16 }
+  ];
+  XLSX.utils.book_append_sheet(wb, wsPerusahaan, "Refund ke Perusahaan");
+
+  XLSX.writeFile(wb, `Settlement_PPh21_${safeCompany}_${safePeriod}.xlsx`);
+}
+
 // ─── SAMPLE CSV ───────────────────────────────────────────────────────────────
 const SAMPLE_CSV = `Nama,StatusPajak,GajiPokok,Tunjangan,Lembur,Bonus,BPJS
 Ahmad Fauzi,TK0,5000000,500000,800000,0,100000
@@ -748,6 +811,7 @@ export default function App() {
   const [loading,  setLoading]  = useState(false);
   const [exporting,setExporting]= useState(false);
   const [exportingPDF, setExportingPDF] = useState(false);
+  const [exportingSettlement, setExportingSettlement] = useState(false);
   const [search,   setSearch]   = useState("");
   const [expandId, setExpandId] = useState(null);
   const [showMapping, setShowMapping] = useState(false);
@@ -978,6 +1042,18 @@ export default function App() {
         setExportingPDF(false);
       }
     }, 100);
+  };
+
+  const doExportSettlement = () => {
+    if (!results || !results.length || mode !== "final") return;
+    setExportingSettlement(true);
+    setTimeout(() => {
+      try {
+        exportSettlementExcel(results, company, period);
+      } finally {
+        setExportingSettlement(false);
+      }
+    }, 120);
   };
 
   const downloadSample = () => {
@@ -1598,6 +1674,15 @@ export default function App() {
               <button onClick={doExportPDF} disabled={exportingPDF} style={{...C.exportBtn,background:"rgba(147,197,253,0.08)",color:"#93c5fd",border:"1px solid rgba(147,197,253,0.2)", opacity: exportingPDF ? 0.6 : 1}}>
                 {exportingPDF ? "⏳ Menyiapkan PDF..." : "📄 PDF Slip Massal"}
               </button>
+              {mode === "final" && (
+                <button
+                  onClick={doExportSettlement}
+                  disabled={exportingSettlement}
+                  style={{...C.exportBtn,background:"rgba(134,239,172,0.08)",color:"#4ade80",border:"1px solid rgba(134,239,172,0.2)",opacity:exportingSettlement?0.6:1}}
+                >
+                  {exportingSettlement ? "⏳ Menyiapkan Settlement..." : "📌 Export Settlement Refund"}
+                </button>
+              )}
               <button onClick={()=>alert("🌟 Format e-SPT tersedia di versi Premium!\nRp 299.000/bulan")} style={{...C.exportBtn,background:"rgba(253,230,138,0.08)",color:"#fde68a",border:"1px solid rgba(253,230,138,0.2)"}}>
                 🧾 Format e-SPT ⭐
               </button>
