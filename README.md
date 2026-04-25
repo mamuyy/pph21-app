@@ -113,6 +113,14 @@ Jika ada bug di produksi:
 - Netlify tidak bisa dibuka: cek apakah muncul `usage_exceeded`; jika iya gunakan link GitHub Pages.
 - Build gagal di Netlify: cek build log, lalu uji lokal dengan `npm run build`.
 
+## Template Komunikasi Payroll
+
+Template siap pakai untuk komunikasi ke karyawan ada di folder `docs/`:
+
+- `docs/template-komunikasi-refund-ybs.md`
+- `docs/template-komunikasi-potong-tambahan-ybs.md`
+- `docs/template-catatan-internal-settlement.md`
+
 ## Struktur Project
 
 ```text
