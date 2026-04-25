@@ -421,10 +421,10 @@ const DEFAULT_ALIAS_TEXT = {
   tanggungan: "tanggungan, dependent, dependents, jumlah tanggungan",
   pphSebelumnya: "pph sebelumnya, pph sd lalu, pph jan nov, pph terpotong sebelumnya, previous pph, cumulative pph",
   pphExcel: "pph excel, pph pembanding, pph21 excel, pph 21 excel, compare pph",
-  gajiPokokD: "ditunjang gaji, gaji ditunjang, flag ditunjang gaji, support gaji, tunjang gaji",
-  tunjanganD: "ditunjang tunjangan, tunjangan ditunjang, flag ditunjang tunjangan, support tunjangan",
-  lemburD: "ditunjang lembur, lembur ditunjang, flag ditunjang lembur, support lembur",
-  bonusD: "ditunjang bonus, bonus ditunjang, flag ditunjang bonus, support bonus"
+  gajiPokokD: "ditunjang gaji, gaji ditunjang, flag ditunjang gaji, support gaji, tunjang gaji, gaji",
+  tunjanganD: "ditunjang tunjangan, tunjangan ditunjang, flag ditunjang tunjangan, support tunjangan, tunjangan pph",
+  lemburD: "ditunjang lembur, lembur ditunjang, flag ditunjang lembur, support lembur, tunjangan lainnya lembur",
+  bonusD: "ditunjang bonus, bonus ditunjang, flag ditunjang bonus, support bonus, bonus ditunjang pph"
 };
 const ALIAS_TEMPLATE_STORAGE_KEY = "pph21-alias-templates-v1";
 const DEFAULT_ALIAS_TEMPLATES = {
@@ -548,7 +548,10 @@ function parseA1Payload(rows) {
     iuranPensiun: findHeaderIndex(headers, ["Iuran Pensiun atau Iuran THT/JHT"]),
     pphSebelumnya: findHeaderIndexPreferred(headers, ["PPh Pasal 21 Jan sd Nov Sudah Dibayar", "PPh Pasal 21 Sebelumnya"]),
     pphExcel: findHeaderIndexPreferred(headers, ["PPh Terutang", "PPh Pasal 21 Terutang"]),
-    flagGajiDitunjang: findHeaderIndex(headers, ["Gaji"]),
+    flagGajiDitunjang: findHeaderIndexPreferred(headers, ["Gaji", "Gaji Ditunjang", "Flag Gaji Ditunjang"]),
+    flagTunjanganDitunjang: findHeaderIndexPreferred(headers, ["Tunjangan PPh", "Tunjangan Ditunjang", "Flag Tunjangan Ditunjang"]),
+    flagLemburDitunjang: findHeaderIndexPreferred(headers, ["Lembur Ditunjang", "Flag Lembur Ditunjang"]),
+    flagBonusDitunjang: findHeaderIndexPreferred(headers, ["Bonus Ditunjang", "Flag Bonus Ditunjang"]),
   };
 
   const required = ["nama", "statusDasar", "tanggungan", "gajiPokok"];
@@ -566,7 +569,10 @@ function parseA1Payload(rows) {
     ["bpjs", idx.bpjsKesehatan],
     ["pphSebelumnya", idx.pphSebelumnya],
     ["pphExcel", idx.pphExcel],
-    ["gajiPokokD", idx.flagGajiDitunjang]
+    ["gajiPokokD", idx.flagGajiDitunjang],
+    ["tunjanganD", idx.flagTunjanganDitunjang],
+    ["lemburD", idx.flagLemburDitunjang],
+    ["bonusD", idx.flagBonusDitunjang]
   ]
     .filter(([, index]) => index !== -1)
     .map(([target, index]) => ({ target, source: String(headers[index] || "") }));
@@ -614,6 +620,9 @@ function parseA1Payload(rows) {
         sumberA1Annual: true,
         tunjanganPphSheet: num(row[idx.tunjanganPphSheet]),
         gajiPokokD: idx.flagGajiDitunjang !== -1 ? String(row[idx.flagGajiDitunjang] ?? "") : "",
+        tunjanganD: idx.flagTunjanganDitunjang !== -1 ? String(row[idx.flagTunjanganDitunjang] ?? "") : "",
+        lemburD: idx.flagLemburDitunjang !== -1 ? String(row[idx.flagLemburDitunjang] ?? "") : "",
+        bonusD: idx.flagBonusDitunjang !== -1 ? String(row[idx.flagBonusDitunjang] ?? "") : "",
       };
     });
 
