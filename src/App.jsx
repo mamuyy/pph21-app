@@ -716,6 +716,7 @@ export default function App() {
   const [exporting,setExporting]= useState(false);
   const [search,   setSearch]   = useState("");
   const [expandId, setExpandId] = useState(null);
+  const [showMapping, setShowMapping] = useState(false);
   const [aliasText, setAliasText] = useState(DEFAULT_ALIAS_TEXT);
   const [aliasTemplates, setAliasTemplates] = useState(DEFAULT_ALIAS_TEMPLATES);
   const [selectedTemplate, setSelectedTemplate] = useState("standard");
@@ -939,36 +940,39 @@ export default function App() {
   }, [aliasTemplates]);
 
   const C = {
-    root: {fontFamily: "'Inter', sans-serif", background: "#060c16", color: "#e8eaf0", minHeight: "100vh", padding: "40px 20px"},
-    hdr: {display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 30},
-    logoTxt: {fontSize: 18, fontWeight: 800, color: "#fff"},
-    configBar: {display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, background: "rgba(255,255,255,0.03)", padding: 20, borderRadius: 12, marginBottom: 20},
-    configGroup: {display: "flex", flexDirection: "column", gap: 8},
-    configLabel: {fontSize: 9, fontWeight: 700, color: "#6b7fa3", letterSpacing: 1},
-    configInput: {background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "8px 12px", color: "#fff"},
-    configSel: {background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "8px 12px", color: "#fff"},
-    configArea: {background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6, padding: "8px 12px", color: "#fff", minHeight: 68, resize: "vertical"},
-    chip: {padding: "6px 12px", borderRadius: 20, border: "1px solid", fontSize: 10, cursor: "pointer", fontWeight: 600},
-    smallBtn: {background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "#e8eaf0", padding: "8px 10px", borderRadius: 6, cursor: "pointer", fontSize: 11},
-    body: {background: "rgba(255,255,255,0.02)", padding: 24, borderRadius: 16},
-    tabRow: {display: "flex", gap: 20, marginBottom: 20},
-    tab: {background: "transparent", border: "none", padding: "10px 0", cursor: "pointer", fontWeight: 600, fontSize: 12},
-    calcBtn: {width: "100%", padding: 16, borderRadius: 8, background: "#34d399", border: "none", fontWeight: 800, color: "#060c16", marginTop: 20, cursor: "pointer"},
-    thead: {display: "flex", background: "rgba(255,255,255,0.05)", padding: "10px 15px", borderRadius: 6, marginBottom: 5},
-    th: {fontSize: 10, color: "#6b7fa3", fontWeight: 700},
-    erow: {display: "flex", alignItems: "center", gap: 10, padding: "5px 15px"},
-    cell: {background: "rgba(0,0,0,0.2)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 4, padding: "6px 8px", color: "#fff", fontSize: 12},
-    td0: {fontSize: 12}, xBtn: {background: "transparent", border: "none", color: "#f87171", cursor: "pointer"},
-    addBtn: {background: "rgba(52,211,153,0.1)", border: "1px solid #34d399", color: "#34d399", padding: "8px 12px", borderRadius: 6, cursor: "pointer"},
-    ghostBtn: {background: "transparent", border: "1px solid #3d4f6e", color: "#6b7fa3", padding: "8px 12px", borderRadius: 6, cursor: "pointer"},
-    drop: {border: "2px dashed", padding: 40, textAlign: "center", borderRadius: 12, cursor: "pointer", transition: "0.2s"},
-    cards: {display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 15, marginBottom: 20},
-    card: {padding: 15, borderRadius: 10, border: "1px solid"},
-    exportBar: {display: "flex", gap: 10, alignItems: "center", padding: 10, background: "rgba(255,255,255,0.03)", borderRadius: 8},
-    exportBtn: {padding: "8px 12px", borderRadius: 6, border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer"},
-    infoBox: {background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, padding: 12},
-    Th: {padding: "12px 8px", textAlign: "left", color: "#6b7fa3", fontSize: 10, textTransform: "uppercase"},
-    Tr: {borderBottom: "1px solid rgba(255,255,255,0.03)"}, Td: {padding: "12px 8px"}
+    root: {fontFamily: "'Inter', system-ui, -apple-system, sans-serif", background: "#0a0f18", color: "#e2e8f0", minHeight: "100vh", padding: "40px 20px", transition: "all 0.3s ease"},
+    hdr: {display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 32},
+    logoTxt: {fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px"},
+    configBar: {display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 24, background: "rgba(255,255,255,0.03)", padding: 24, borderRadius: 16, marginBottom: 24, border: "1px solid rgba(255,255,255,0.05)"},
+    configGroup: {display: "flex", flexDirection: "column", gap: 10},
+    configLabel: {fontSize: 10, fontWeight: 700, color: "#94a3b8", letterSpacing: "1.2px", textTransform: "uppercase"},
+    configInput: {background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 14px", color: "#fff", fontSize: 13, outline: "none", transition: "border-color 0.2s"},
+    configSel: {background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 14px", color: "#fff", fontSize: 13, cursor: "pointer", outline: "none"},
+    configArea: {background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "10px 14px", color: "#fff", minHeight: 80, resize: "vertical", fontSize: 12, lineHeight: 1.5},
+    chip: {padding: "8px 16px", borderRadius: 24, border: "1px solid", fontSize: 11, cursor: "pointer", fontWeight: 600, transition: "all 0.2s"},
+    smallBtn: {background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#f1f5f9", padding: "10px 16px", borderRadius: 8, cursor: "pointer", fontSize: 12, fontWeight: 600, transition: "background 0.2s"},
+    body: {background: "rgba(255,255,255,0.02)", padding: 32, borderRadius: 20, border: "1px solid rgba(255,255,255,0.03)"},
+    tabRow: {display: "flex", gap: 32, marginBottom: 24},
+    tab: {background: "transparent", border: "none", padding: "12px 0", cursor: "pointer", fontWeight: 700, fontSize: 13, color: "#64748b", transition: "color 0.2s"},
+    calcBtn: {width: "100%", padding: 18, borderRadius: 12, background: "linear-gradient(135deg, #10b981 0%, #059669 100%)", border: "none", fontWeight: 800, color: "#fff", marginTop: 24, cursor: "pointer", fontSize: 15, boxShadow: "0 10px 15px -3px rgba(16, 185, 129, 0.2)"},
+    thead: {display: "flex", background: "rgba(255,255,255,0.05)", padding: "12px 20px", borderRadius: 8, marginBottom: 8},
+    th: {fontSize: 11, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px"},
+    erow: {display: "flex", alignItems: "center", gap: 12, padding: "8px 20px", borderRadius: 8, transition: "background 0.2s"},
+    cell: {background: "rgba(0,0,0,0.3)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, padding: "8px 12px", color: "#fff", fontSize: 13, outline: "none"},
+    td0: {fontSize: 13, fontWeight: 600}, 
+    xBtn: {background: "rgba(239, 68, 68, 0.1)", border: "none", color: "#f87171", cursor: "pointer", width: 24, height: 24, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16},
+    addBtn: {background: "rgba(16, 185, 129, 0.1)", border: "1px solid rgba(16, 185, 129, 0.3)", color: "#34d399", padding: "10px 20px", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 13},
+    ghostBtn: {background: "transparent", border: "1px solid rgba(148, 163, 184, 0.3)", color: "#94a3b8", padding: "10px 20px", borderRadius: 8, cursor: "pointer", fontWeight: 700, fontSize: 13},
+    drop: {border: "2px dashed rgba(16, 185, 129, 0.3)", padding: 48, textAlign: "center", borderRadius: 16, cursor: "pointer", transition: "all 0.3s ease", background: "rgba(16, 185, 129, 0.02)"},
+    cards: {display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 20, marginBottom: 32},
+    card: {padding: 24, borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", transition: "transform 0.2s ease"},
+    exportBar: {display: "flex", gap: 12, alignItems: "center", padding: 16, background: "rgba(255,255,255,0.03)", borderRadius: 12, border: "1px solid rgba(255,255,255,0.05)"},
+    exportBtn: {padding: "10px 20px", borderRadius: 8, border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", transition: "all 0.2s"},
+    infoBox: {background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 16, padding: 20},
+    Th: {padding: "14px 12px", textAlign: "left", color: "#94a3b8", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px"},
+    Tr: {borderBottom: "1px solid rgba(255,255,255,0.04)"}, 
+    Td: {padding: "14px 12px", fontSize: 13},
+    sectionTitle: {fontSize: 12, fontWeight: 800, color: "#fff", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: 16, display: "flex", alignItems: "center", gap: 8}
   };
   const taxFlowFmt = mode === "final" ? rpSigned : rp;
   const burdenFmt = (value) => rp(Math.abs(value));
@@ -976,8 +980,23 @@ export default function App() {
   return (
     <div style={C.root}>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
         .spin { animation: spin 2s linear infinite; display: inline-block; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); borderRadius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* Responsive Table */
+        @media (max-width: 768px) {
+          body { padding: 10px !important; }
+          .config-bar { gridTemplateColumns: 1fr !important; }
+          .card-summary { gridTemplateColumns: 1fr 1fr !important; }
+          .hide-mobile { display: none !important; }
+        }
       `}</style>
       <div style={C.hdr}>
         <div style={{display:"flex",alignItems:"center",gap:12}}>
@@ -988,7 +1007,7 @@ export default function App() {
         </div>
       </div>
 
-        <div style={C.configBar}>
+        <div style={C.configBar} className="config-bar">
           <div style={C.configGroup}>
           <div style={C.configLabel}>MODE PERHITUNGAN</div>
           <div style={{display:"flex",gap:8}}>
@@ -1032,38 +1051,69 @@ export default function App() {
         </div>
       </div>
 
-      <div style={{...C.body, marginBottom: 20}}>
-        <div style={{fontSize:10,fontWeight:700,color:"#6b7fa3",letterSpacing:"1.5px",marginBottom:12}}>MAPPING ALIAS KOMPONEN PAYROLL</div>
-        <div style={{fontSize:11,color:"#6b7fa3",marginBottom:14,lineHeight:1.5}}>
-          Pisahkan dengan koma. Nama kolom payroll seperti <code>insentif site</code>, <code>uang hadir</code>, atau <code>allowance project</code> akan diarahkan ke kategori standar di bawah saat import CSV/Excel.
-        </div>
-        <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
-          <select style={{...C.configSel,minWidth:220}} value={selectedTemplate} onChange={(e)=>applyAliasTemplate(e.target.value)}>
-            {Object.entries(aliasTemplates).map(([key, value])=>(
-              <option key={key} value={key}>{value.label}</option>
-            ))}
-          </select>
-          <button onClick={saveCurrentTemplate} style={C.smallBtn}>Simpan Template Ini</button>
-          <button onClick={exportAliasTemplates} style={C.smallBtn}>Export JSON</button>
-          <button onClick={()=>templateFileRef.current?.click()} style={C.smallBtn}>Import JSON</button>
-          <input ref={templateFileRef} type="file" accept=".json,application/json" style={{display:"none"}} onChange={(e)=>importAliasTemplates(e.target.files?.[0])}/>
-          {aliasTemplates[selectedTemplate]?.custom && (
-            <button onClick={deleteCurrentTemplate} style={{...C.smallBtn,color:"#fca5a5",border:"1px solid rgba(252,165,165,0.2)"}}>Hapus Template</button>
-          )}
-        </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))",gap:12}}>
-          {ALIAS_FIELDS.map((field) => (
-            <div key={field.key} style={C.configGroup}>
-              <div style={C.configLabel}>{field.label}</div>
-              <textarea
-                style={C.configArea}
-                value={aliasText[field.key]}
-                onChange={(e) => setAlias(field.key, e.target.value)}
-                placeholder={`Alias untuk ${field.label}`}
-              />
+      {/* ── SUMMARY DASHBOARD ── */}
+      {results && totals && (
+        <div style={C.cards}>
+          {[
+            ["👥 TOTAL KARYAWAN", results.length + " orang", "#fff", "rgba(255,255,255,0.05)", "rgba(255,255,255,0.1)"],
+            ["📦 TOTAL BRUTO", rp(totals.bruto), "#93c5fd", "rgba(147,197,253,0.08)", "rgba(147,197,253,0.2)"],
+            ["🔴 TOTAL PPh 21", taxFlowFmt(totals.pphTotal), "#fca5a5", "rgba(252,165,165,0.08)", "rgba(252,165,165,0.2)"],
+            ["🟢 DITUNJANG PERUSAHAAN", taxFlowFmt(totals.pphP), "#34d399", "rgba(16,185,129,0.08)", "rgba(16,185,129,0.2)"],
+            ...(comparison && comparison.compared > 0 ? [
+              ["⚖️ SELISIH VS EXCEL", rpSigned(comparison.totalDiff), Math.abs(comparison.totalDiff) > 1000 ? "#f87171" : "#fbbf24", "rgba(251,191,36,0.08)", "rgba(251,191,36,0.2)"]
+            ] : [])
+          ].map(([l, v, c, bg, br]) => (
+            <div key={l} style={{...C.card, background: bg, borderColor: br}} className="card-summary">
+              <div style={{fontSize: 10, fontWeight: 700, color: "#94a3b8", marginBottom: 8, letterSpacing: "0.5px"}}>{l}</div>
+              <div style={{fontSize: 20, fontWeight: 900, color: c, letterSpacing: "-0.5px"}}>{v}</div>
             </div>
           ))}
         </div>
+      )}
+
+      <div style={{...C.body, marginBottom: 24}}>
+        <div 
+          onClick={() => setShowMapping(!showMapping)} 
+          style={{...C.sectionTitle, cursor: "pointer", justifyContent: "space-between", marginBottom: showMapping ? 16 : 0}}
+        >
+          <span>⚙️ PENGATURAN LANJUTAN / MAPPING ALIAS PAYROLL</span>
+          <span style={{fontSize: 14}}>{showMapping ? "−" : "+"}</span>
+        </div>
+        
+        {showMapping && (
+          <>
+            <div style={{fontSize: 12, color: "#94a3b8", marginBottom: 20, lineHeight: 1.6}}>
+              Konfigurasikan nama kolom payroll Anda agar terbaca otomatis oleh sistem. Pisahkan alias dengan koma.
+            </div>
+            <div style={{display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginBottom: 24}}>
+              <select style={{...C.configSel, minWidth: 240}} value={selectedTemplate} onChange={(e) => applyAliasTemplate(e.target.value)}>
+                {Object.entries(aliasTemplates).map(([key, value]) => (
+                  <option key={key} value={key}>{value.label}</option>
+                ))}
+              </select>
+              <button onClick={saveCurrentTemplate} style={C.smallBtn}>Simpan Template</button>
+              <button onClick={exportAliasTemplates} style={C.smallBtn}>Export JSON</button>
+              <button onClick={() => templateFileRef.current?.click()} style={C.smallBtn}>Import JSON</button>
+              <input ref={templateFileRef} type="file" accept=".json,application/json" style={{display: "none"}} onChange={(e) => importAliasTemplates(e.target.files?.[0])} />
+              {aliasTemplates[selectedTemplate]?.custom && (
+                <button onClick={deleteCurrentTemplate} style={{...C.smallBtn, color: "#fca5a5", border: "1px solid rgba(252,165,165,0.2)"}}>Hapus</button>
+              )}
+            </div>
+            <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16}}>
+              {ALIAS_FIELDS.map((field) => (
+                <div key={field.key} style={C.configGroup}>
+                  <div style={C.configLabel}>{field.label}</div>
+                  <textarea
+                    style={C.configArea}
+                    value={aliasText[field.key]}
+                    onChange={(e) => setAlias(field.key, e.target.value)}
+                    placeholder={`Contoh: ${field.label.toLowerCase()}, gapok, basic...`}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
         {lastImportInfo && (
           <div style={{...C.infoBox, marginTop: 14}}>
             <div style={{fontSize:10,fontWeight:700,color:"#6b7fa3",letterSpacing:"1.2px",marginBottom:8}}>
@@ -1232,29 +1282,14 @@ export default function App() {
           <div style={{marginTop:24}}>
 
             {/* Summary cards */}
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:12}}>
-              <div style={{fontSize:10,fontWeight:700,color:"#1e3020",letterSpacing:"1.5px"}}>RINGKASAN EKSEKUTIF · {period}</div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:12, gap: 16, flexWrap: "wrap"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"#64748b",letterSpacing:"1.5px"}}>HASIL PERHITUNGAN DETAIL · {period}</div>
               <input 
                 placeholder="Cari nama karyawan..." 
                 value={search} 
                 onChange={e=>setSearch(e.target.value)}
-                style={{...C.configInput, minWidth:200, padding:"6px 10px", fontSize:11}}
+                style={{...C.configInput, minWidth:260, padding:"8px 14px", fontSize:12}}
               />
-            </div>
-            <div style={C.cards}>
-              {[
-                ["👥 Karyawan",results.length+" orang","#a3e4d7","rgba(163,228,215,0.08)"],
-                ["📦 Total Bruto",rp(totals.bruto),"#93c5fd","rgba(147,197,253,0.08)"],
-                ["🔴 PPh Karyawan",taxFlowFmt(totals.pphK),"#fca5a5","rgba(252,165,165,0.08)"],
-                ["🟢 PPh Perusahaan",taxFlowFmt(totals.pphP),"#86efac","rgba(134,239,172,0.08)"],
-                ["🏠 Total THP",rp(totals.takehome),"#fde68a","rgba(253,230,138,0.08)"],
-                ["💼 Beban Riil",rp(totals.beban),"#c4b5fd","rgba(196,181,253,0.08)"],
-              ].map(([l,v,c,bg])=>(
-                <div key={l} style={{...C.card,background:bg,borderColor:c+"33"}}>
-                  <div style={{fontSize:9,color:"#3d4f6e",marginBottom:5}}>{l}</div>
-                  <div style={{fontSize:13,fontWeight:800,color:c,letterSpacing:"-0.3px",lineHeight:1.2}}>{v}</div>
-                </div>
-              ))}
             </div>
             {taxPosition && (
               <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit, minmax(280px, 1fr))",gap:12,marginBottom:12}}>
@@ -1399,7 +1434,7 @@ export default function App() {
                 <thead>
                   <tr style={{background:"rgba(255,255,255,0.03)"}}>
                     {[["#","",36],["nama","Nama",150],["status","Status",58],["bruto","Bruto",105],["pphK","PPh Karyawan",115],["pphP","PPh Perusahaan",120],["pphExcel","Versi Excel",115],["selisih","Selisih",110],["takehome","Take Home",108],["","",36]].map(([k,lbl,w])=>(
-                      <th key={k+lbl} onClick={()=>k&&doSort(k)} style={{...C.Th,width:w,cursor:k?"pointer":"default"}}>
+                      <th key={k+lbl} onClick={()=>k&&doSort(k)} style={{...C.Th,width:w,cursor:k?"pointer":"default"}} className={["status","bruto","pphExcel","selisih"].includes(k) ? "hide-mobile" : ""}>
                         {lbl}{sortK===k?(sortD===1?" ↑":" ↓"):""}
                       </th>
                     ))}
@@ -1410,12 +1445,12 @@ export default function App() {
                     <tr key={r.id} onClick={() => setExpandId(expandId === r.id ? null : r.id)} style={{...C.Tr, cursor: "pointer", background:expandId===r.id?"rgba(52,211,153,0.12)":i%2?"transparent":"rgba(255,255,255,0.01)"}}>
                       <td style={{...C.Td,color:"#6b7fa3",textAlign:"center"}}>{i+1}</td>
                       <td style={{...C.Td,fontWeight:600,color:"#e8eaf0",maxWidth:150}}>{r.nama||"—"}</td>
-                      <td style={{...C.Td,textAlign:"center"}}><span style={{background:"rgba(255,255,255,0.06)",padding:"2px 6px",borderRadius:5,fontSize:10}}>{r.status}</span></td>
-                      <td style={{...C.Td,textAlign:"right",color:"#cbd5e1"}}>{rp(r.bruto)}</td>
+                      <td style={{...C.Td,textAlign:"center"}} className="hide-mobile"><span style={{background:"rgba(255,255,255,0.06)",padding:"2px 6px",borderRadius:5,fontSize:10}}>{r.status}</span></td>
+                      <td style={{...C.Td,textAlign:"right",color:"#cbd5e1"}} className="hide-mobile">{rp(r.bruto)}</td>
                       <td style={{...C.Td,textAlign:"right",color:"#fca5a5",fontWeight:600}}>{taxFlowFmt(r.pphK)}</td>
                       <td style={{...C.Td,textAlign:"right",color:"#86efac",fontWeight:600}}>{taxFlowFmt(r.pphP)}</td>
-                      <td style={{...C.Td,textAlign:"right",color:"#93c5fd",fontWeight:600}}>{rpSigned(r.pphExcel)}</td>
-                      <td style={{...C.Td,textAlign:"right",color:Math.abs(r.pphTotal - r.pphExcel) > 100 ? "#f87171" : "#34d399", fontWeight:700}}>{rpSigned(r.pphTotal - r.pphExcel)}</td>
+                      <td style={{...C.Td,textAlign:"right",color:"#93c5fd",fontWeight:600}} className="hide-mobile">{rpSigned(r.pphExcel)}</td>
+                      <td style={{...C.Td,textAlign:"right",color:Math.abs(r.pphTotal - r.pphExcel) > 100 ? "#f87171" : "#34d399", fontWeight:700}} className="hide-mobile">{rpSigned(r.pphTotal - r.pphExcel)}</td>
                       <td style={{...C.Td,textAlign:"right",color:"#fde68a",fontWeight:700}}>{rp(r.takehome)}</td>
                       <td style={{...C.Td,textAlign:"center",color:"#3d4f6e"}}>{expandId === r.id ? "▲" : "▼"}</td>
                     </tr>,
