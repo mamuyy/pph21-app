@@ -1,5 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
 import * as XLSX from "xlsx";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 const rp  = (n) => "Rp " + Math.abs(Math.round(n||0)).toLocaleString("id-ID");
@@ -714,6 +716,7 @@ export default function App() {
   const [dragging, setDragging] = useState(false);
   const [loading,  setLoading]  = useState(false);
   const [exporting,setExporting]= useState(false);
+  const [exportingPDF, setExportingPDF] = useState(false);
   const [search,   setSearch]   = useState("");
   const [expandId, setExpandId] = useState(null);
   const [showMapping, setShowMapping] = useState(false);
@@ -848,6 +851,91 @@ export default function App() {
       exportExcel(results, totals, company, period, policy);
       setExporting(false);
     },300);
+  };
+
+  const doExportPDF = () => {
+    if (!results || !results.length) return;
+    setExportingPDF(true);
+    
+    // Gunakan setTimeout agar UI loading sempat muncul
+    setTimeout(() => {
+      try {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        
+        results.forEach((r, i) => {
+          if (i > 0) doc.addPage();
+          
+          // Header
+          doc.setFontSize(16);
+          doc.setFont("helvetica", "bold");
+          doc.text(company.toUpperCase(), pageWidth / 2, 20, { align: "center" });
+          
+          doc.setFontSize(12);
+          doc.text("SLIP PENGHASILAN & PPh 21 (TER)", pageWidth / 2, 28, { align: "center" });
+          
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          doc.text(`Periode: ${period}`, pageWidth / 2, 34, { align: "center" });
+          
+          doc.line(20, 38, pageWidth - 20, 38);
+          
+          // Data Karyawan
+          doc.setFont("helvetica", "bold");
+          doc.text("DATA KARYAWAN", 20, 48);
+          doc.setFont("helvetica", "normal");
+          doc.text(`Nama: ${r.nama}`, 20, 54);
+          doc.text(`Status PTKP: ${r.status}`, 20, 59);
+          doc.text(`Masa Kerja: ${r.bulanKerja} bulan`, 20, 64);
+          
+          // Komponen Table
+          const body = [
+            ["Gaji Pokok", rp(r.gajiPokok), policy.gajiPokok ? "Ditunjang" : "-"],
+            ["Tunjangan", rp(r.tunjangan), policy.tunjangan ? "Ditunjang" : "-"],
+            ["Lembur", rp(r.lembur), policy.lembur ? "Ditunjang" : "-"],
+            ["Bonus/THR", rp(r.bonus), policy.bonus ? "Ditunjang" : "-"],
+            ["BPJS (Pengurang)", rp(-r.bpjs), ""],
+            ["Tunjangan PPh (dari Perusahaan)", rp(r.tunj), ""],
+            ["", "", ""],
+            ["PENGHASILAN NETO (BASIS TER)", rp(r.neto), ""],
+            [`PPh 21 (TER ${(r.ter * 100).toFixed(2)}%)`, rp(r.pphTotal), ""],
+            ["", "", ""],
+            ["PPh 21 DITANGGUNG PERUSAHAAN", rp(r.pphP), ""],
+            ["PPh 21 DIPOTONG DARI GAJI", rp(r.pphK), ""],
+          ];
+          
+          doc.autoTable({
+            startY: 72,
+            head: [["Komponen", "Nilai", "Keterangan"]],
+            body: body,
+            theme: "striped",
+            headStyles: { fillStyle: "#10b981" },
+            margin: { left: 20, right: 20 },
+          });
+          
+          const finalY = doc.lastAutoTable.finalY || 150;
+          
+          // Take Home Pay Box
+          doc.setFillColor(245, 245, 245);
+          doc.rect(20, finalY + 10, pageWidth - 40, 20, "F");
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(12);
+          doc.text("TAKE HOME PAY", 30, finalY + 23);
+          doc.text(rp(r.takehome), pageWidth - 30, finalY + 23, { align: "right" });
+          
+          // Footer
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "italic");
+          doc.text(`Dicetak otomatis oleh Mamuyy PPh 21 App pada ${new Date().toLocaleString("id-ID")}`, 20, doc.internal.pageSize.getHeight() - 10);
+        });
+        
+        doc.save(`Slip_PPh21_${company.replace(/\s+/g,"_")}_${period.replace(/\s+/g,"_")}.pdf`);
+      } catch (err) {
+        alert("Gagal membuat PDF: " + err.message);
+      } finally {
+        setExportingPDF(false);
+      }
+    }, 100);
   };
 
   const downloadSample = () => {
@@ -1420,8 +1508,8 @@ export default function App() {
               <button onClick={doExport} disabled={exporting} style={{...C.exportBtn,"--c":"#86efac","--bg":"rgba(134,239,172,0.1)","--br":"rgba(134,239,172,0.25)",background:"rgba(134,239,172,0.1)",color:"#86efac",border:"1px solid rgba(134,239,172,0.25)",opacity:exporting?.6:1}}>
                 {exporting?"⏳ Menyiapkan...":"📊 Download Excel (3 Sheet)"}
               </button>
-              <button onClick={()=>alert("🌟 PDF Slip Massal tersedia di versi Premium!\nRp 299.000/bulan")} style={{...C.exportBtn,background:"rgba(147,197,253,0.08)",color:"#93c5fd",border:"1px solid rgba(147,197,253,0.2)"}}>
-                📄 PDF Slip Massal ⭐
+              <button onClick={doExportPDF} disabled={exportingPDF} style={{...C.exportBtn,background:"rgba(147,197,253,0.08)",color:"#93c5fd",border:"1px solid rgba(147,197,253,0.2)", opacity: exportingPDF ? 0.6 : 1}}>
+                {exportingPDF ? "⏳ Menyiapkan PDF..." : "📄 PDF Slip Massal"}
               </button>
               <button onClick={()=>alert("🌟 Format e-SPT tersedia di versi Premium!\nRp 299.000/bulan")} style={{...C.exportBtn,background:"rgba(253,230,138,0.08)",color:"#fde68a",border:"1px solid rgba(253,230,138,0.2)"}}>
                 🧾 Format e-SPT ⭐
