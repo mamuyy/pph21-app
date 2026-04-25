@@ -19,8 +19,10 @@ Untuk file 1721-A1 Desember yang sudah memuat `PPh Jan sd Nov Sudah Dibayar`, gu
 
 ## Akses Tim
 
-- Produksi: `https://mamuyy-pph21.netlify.app`
-- Admin deploy: `https://app.netlify.com/projects/mamuyy-pph21`
+- Produksi utama: `https://mamuyy.github.io/pph21-app/`
+- Mirror (sementara non-aktif karena limit kuota): `https://mamuyy-pph21.netlify.app`
+- Admin deploy GitHub Pages: `https://github.com/mamuyy/pph21-app/actions`
+- Admin deploy Netlify: `https://app.netlify.com/projects/mamuyy-pph21`
 - Repo source (private): `https://github.com/mamuyy/pph21-app`
 
 ## Menjalankan Lokal
@@ -45,15 +47,26 @@ npm run preview
 
 Hasil build akan dibuat di folder `dist/`.
 
-## Deploy Otomatis (Netlify + GitHub)
+## Deploy Otomatis (GitHub Pages)
 
-Project ini sudah terhubung ke Netlify dengan auto deploy dari branch `main`.
+Project ini disiapkan agar auto deploy ke GitHub Pages dari branch `main` lewat GitHub Actions.
 
 Alur deploy:
 
 1. Commit perubahan ke repository lokal.
 2. Push ke `origin/main`.
-3. Netlify otomatis build dan publish versi terbaru.
+3. GitHub Actions otomatis build dan publish versi terbaru.
+4. Verifikasi status deploy di tab `Actions` repository.
+
+## Deploy Otomatis (Netlify - Opsional)
+
+Integrasi Netlify tetap tersedia, tetapi saat ini dapat terganggu jika kuota plan habis (`usage_exceeded`).
+
+Alur deploy Netlify tetap sama:
+
+1. Commit perubahan ke repository lokal.
+2. Push ke `origin/main`.
+3. Netlify mencoba build dan publish versi terbaru.
 4. Verifikasi status deploy di dashboard Netlify.
 
 ## SOP Operasional Tim Payroll
@@ -88,16 +101,16 @@ Setelah `git push`, cek deploy otomatis di:
 
 Jika ada bug di produksi:
 
-1. Buka halaman deploy Netlify.
-2. Pilih deploy terakhir yang stabil.
-3. Klik `Publish deploy` untuk rollback instan.
-4. Buat issue/perbaikan di branch kerja sebelum push ulang ke `main`.
+1. Untuk GitHub Pages: revert commit bermasalah lalu push ke `main`.
+2. Untuk Netlify: buka halaman deploy Netlify, pilih deploy stabil, lalu klik `Publish deploy`.
+3. Buat issue/perbaikan di branch kerja sebelum push ulang ke `main`.
 
 ## Troubleshooting Singkat
 
 - Angka tidak update: refresh page lalu import ulang file sumber.
 - Hasil berbeda jauh: pastikan mode yang dipilih benar, terutama file Desember harus `MASA TERAKHIR`.
 - Selisih kecil (Rp50-Rp200): biasanya efek pembulatan.
+- Netlify tidak bisa dibuka: cek apakah muncul `usage_exceeded`; jika iya gunakan link GitHub Pages.
 - Build gagal di Netlify: cek build log, lalu uji lokal dengan `npm run build`.
 
 ## Struktur Project
