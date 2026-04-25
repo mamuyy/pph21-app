@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 const rp  = (n) => "Rp " + Math.abs(Math.round(n||0)).toLocaleString("id-ID");
@@ -904,7 +904,7 @@ export default function App() {
             ["PPh 21 DIPOTONG DARI GAJI", rp(r.pphK), ""],
           ];
           
-          doc.autoTable({
+          autoTable(doc, {
             startY: 72,
             head: [["Komponen", "Nilai", "Keterangan"]],
             body: body,
