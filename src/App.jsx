@@ -270,8 +270,34 @@ function exportSettlementExcel(results, company, period) {
       "PPh s.d. Lalu": num(r.pphSebelumnya),
     }));
 
+  const payableYbsRows = results
+    .filter((r) => num(r.pphK) > 0)
+    .map((r, i) => ({
+      No: i + 1,
+      Nama: r.nama,
+      Status: r.status,
+      "Tagih ke Ybs": num(r.pphK),
+      "PPh Masa Terakhir": num(r.pphTotal),
+      "PPh Setahun": num(r.annualPphTotal),
+      "PPh s.d. Lalu": num(r.pphSebelumnya),
+    }));
+
+  const payablePerusahaanRows = results
+    .filter((r) => num(r.pphP) > 0)
+    .map((r, i) => ({
+      No: i + 1,
+      Nama: r.nama,
+      Status: r.status,
+      "Beban Perusahaan": num(r.pphP),
+      "PPh Masa Terakhir": num(r.pphTotal),
+      "PPh Setahun": num(r.annualPphTotal),
+      "PPh s.d. Lalu": num(r.pphSebelumnya),
+    }));
+
   const totalRefundYbs = refundYbsRows.reduce((s, r) => s + num(r["Refund ke Ybs"]), 0);
   const totalRefundPerusahaan = refundPerusahaanRows.reduce((s, r) => s + num(r["Refund ke Perusahaan"]), 0);
+  const totalTagihYbs = payableYbsRows.reduce((s, r) => s + num(r["Tagih ke Ybs"]), 0);
+  const totalBebanPerusahaan = payablePerusahaanRows.reduce((s, r) => s + num(r["Beban Perusahaan"]), 0);
 
   const summary = [
     ["REKAP SETTLEMENT INTERNAL PPh 21"],
@@ -282,7 +308,10 @@ function exportSettlementExcel(results, company, period) {
     ["Keterangan", "Jumlah Pegawai", "Nominal"],
     ["Refund ke Ybs", refundYbsRows.length, totalRefundYbs],
     ["Refund ke Perusahaan", refundPerusahaanRows.length, totalRefundPerusahaan],
+    ["Tagih ke Ybs", payableYbsRows.length, totalTagihYbs],
+    ["Beban Perusahaan", payablePerusahaanRows.length, totalBebanPerusahaan],
     ["Total Refund", "", totalRefundYbs + totalRefundPerusahaan],
+    ["Total Payable", "", totalTagihYbs + totalBebanPerusahaan],
   ];
   const wsSummary = XLSX.utils.aoa_to_sheet(summary);
   wsSummary["!cols"] = [{ wch: 30 }, { wch: 18 }, { wch: 20 }];
@@ -300,6 +329,36 @@ function exportSettlementExcel(results, company, period) {
     { wch: 6 }, { wch: 28 }, { wch: 10 }, { wch: 22 }, { wch: 18 }, { wch: 16 }, { wch: 16 }
   ];
   XLSX.utils.book_append_sheet(wb, wsPerusahaan, "Refund ke Perusahaan");
+
+  const payableCombinedRows = [
+    ...payableYbsRows.map((r) => ({
+      Jenis: "Tagih ke Ybs",
+      No: r.No,
+      Nama: r.Nama,
+      Status: r.Status,
+      Nominal: r["Tagih ke Ybs"],
+      "PPh Masa Terakhir": r["PPh Masa Terakhir"],
+      "PPh Setahun": r["PPh Setahun"],
+      "PPh s.d. Lalu": r["PPh s.d. Lalu"],
+    })),
+    ...payablePerusahaanRows.map((r) => ({
+      Jenis: "Beban Perusahaan",
+      No: r.No,
+      Nama: r.Nama,
+      Status: r.Status,
+      Nominal: r["Beban Perusahaan"],
+      "PPh Masa Terakhir": r["PPh Masa Terakhir"],
+      "PPh Setahun": r["PPh Setahun"],
+      "PPh s.d. Lalu": r["PPh s.d. Lalu"],
+    })),
+  ];
+  const wsPayable = XLSX.utils.json_to_sheet(
+    payableCombinedRows.length ? payableCombinedRows : [{ Info: "Tidak ada data tagih ke ybs / beban perusahaan." }]
+  );
+  wsPayable["!cols"] = [
+    { wch: 20 }, { wch: 6 }, { wch: 28 }, { wch: 10 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 16 }
+  ];
+  XLSX.utils.book_append_sheet(wb, wsPayable, "Tagih & Beban");
 
   XLSX.writeFile(wb, `Settlement_PPh21_${safeCompany}_${safePeriod}.xlsx`);
 }
