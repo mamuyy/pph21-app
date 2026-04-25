@@ -419,12 +419,12 @@ const DEFAULT_ALIAS_TEXT = {
   bonus: "bonus, thr, rapel, bonus kinerja, insentif tahunan, jasa produksi",
   bpjs: "bpjs, bpjs tk, bpjs kesehatan, iuran bpjs, potongan bpjs, iuran pegawai",
   tanggungan: "tanggungan, dependent, dependents, jumlah tanggungan",
-  pphSebelumnya: "pph sebelumnya, pph sd lalu, pph jan nov, pph terpotong sebelumnya, previous pph, cumulative pph",
-  pphExcel: "pph excel, pph pembanding, pph21 excel, pph 21 excel, compare pph",
-  gajiPokokD: "ditunjang gaji, gaji ditunjang, flag ditunjang gaji, support gaji, tunjang gaji, gaji",
-  tunjanganD: "ditunjang tunjangan, tunjangan ditunjang, flag ditunjang tunjangan, support tunjangan, tunjangan pph",
-  lemburD: "ditunjang lembur, lembur ditunjang, flag ditunjang lembur, support lembur, tunjangan lainnya lembur",
-  bonusD: "ditunjang bonus, bonus ditunjang, flag ditunjang bonus, support bonus, bonus ditunjang pph"
+  pphSebelumnya: "pph sebelumnya, pph sd lalu, pph jan nov, pph terpotong sebelumnya, previous pph, cumulative pph, pphsebelumnya, pph_sebelumnya",
+  pphExcel: "pph excel, pph pembanding, pph21 excel, pph 21 excel, compare pph, pphexcel, pph_excel",
+  gajiPokokD: "ditunjang gaji, gaji ditunjang, flag ditunjang gaji, support gaji, tunjang gaji, gaji, gajipokokd, gaji_pokok_d",
+  tunjanganD: "ditunjang tunjangan, tunjangan ditunjang, flag ditunjang tunjangan, support tunjangan, tunjangan pph, tunjangand, tunjangan_d",
+  lemburD: "ditunjang lembur, lembur ditunjang, flag ditunjang lembur, support lembur, tunjangan lainnya lembur, lemburd, lembur_d",
+  bonusD: "ditunjang bonus, bonus ditunjang, flag ditunjang bonus, support bonus, bonus ditunjang pph, bonusd, bonus_d"
 };
 const ALIAS_TEMPLATE_STORAGE_KEY = "pph21-alias-templates-v1";
 const DEFAULT_ALIAS_TEMPLATES = {
