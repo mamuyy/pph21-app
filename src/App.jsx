@@ -11,6 +11,13 @@ const rpSigned = (n) => {
   return prefix + Math.abs(value).toLocaleString("id-ID");
 };
 const num = (v) => parseFloat(v)||0;
+const parseSupportOverride = (v) => {
+  const raw = String(v ?? "").trim().toLowerCase();
+  if (!raw) return null;
+  if (["1", "y", "yes", "ya", "true", "tunjang", "ditunjang", "support"].includes(raw)) return true;
+  if (["0", "n", "no", "tidak", "false", "tdk", "tidak ditunjang", "nontunjang"].includes(raw)) return false;
+  return null;
+};
 
 // ─── TER PMK 168/2023 ─────────────────────────────────────────────────────────
 const TER_A = [
@@ -79,12 +86,18 @@ function hitungSatu(emp, policy, mode = "monthly") {
   const isFinal = mode === "final";
   const bulan = Math.max(1, num(emp.bulanKerja || 12));
   const annualSheetTunjanganPph = Math.max(0, num(emp.tunjanganPphSheet));
+  const policyUsed = {
+    gajiPokok: parseSupportOverride(emp.gajiPokokD) ?? policy.gajiPokok,
+    tunjangan: parseSupportOverride(emp.tunjanganD) ?? policy.tunjangan,
+    lembur: parseSupportOverride(emp.lemburD) ?? policy.lembur,
+    bonus: parseSupportOverride(emp.bonusD) ?? policy.bonus
+  };
   const regularMonthly = [
-    {key:"gajiPokok",val:num(emp.gajiPokok),d:policy.gajiPokok},
-    {key:"tunjangan",val:num(emp.tunjangan),d:policy.tunjangan},
-    {key:"lembur",   val:num(emp.lembur),   d:policy.lembur},
+    {key:"gajiPokok",val:num(emp.gajiPokok),d:policyUsed.gajiPokok},
+    {key:"tunjangan",val:num(emp.tunjangan),d:policyUsed.tunjangan},
+    {key:"lembur",   val:num(emp.lembur),   d:policyUsed.lembur},
   ];
-  const bonus = { key:"bonus", val:num(emp.bonus), d:policy.bonus };
+  const bonus = { key:"bonus", val:num(emp.bonus), d:policyUsed.bonus };
   const monthlyBruto = regularMonthly.reduce((a,b)=>a+b.val,0) + bonus.val;
   const monthlyBrutoD = regularMonthly.reduce((a,b)=>a+(b.d?b.val:0),0) + (bonus.d ? bonus.val : 0);
   const annualBrutoBase = (regularMonthly.reduce((a,b)=>a+b.val,0) * bulan) + bonus.val + annualSheetTunjanganPph;
@@ -150,6 +163,7 @@ function hitungSatu(emp, policy, mode = "monthly") {
     takehome: (isAnnual ? bruto : monthlyBruto) - pphK - (isAnnual ? bpjs : bpjsMonthly),
     beban: (isAnnual ? bruto : monthlyBruto) + pphP,
     rasio: rasio * 100,
+    policyUsed,
     isAnnual,
     isFinal
   };
@@ -191,10 +205,10 @@ function exportExcel(results, totals, company, period, policy) {
   results.forEach((r,i) => {
     slipData.push([`${i+1}. ${r.nama} (${r.status})`]);
     slipData.push(["Komponen","Nilai","Keterangan"]);
-    slipData.push(["Gaji Pokok",  num(r.gajiPokok), policy.gajiPokok?"Ditunjang PPh":"Tdk Ditunjang"]);
-    slipData.push(["Tunjangan",   num(r.tunjangan), policy.tunjangan?"Ditunjang PPh":"Tdk Ditunjang"]);
-    slipData.push(["Lembur",      num(r.lembur),    policy.lembur?"Ditunjang PPh":"Tdk Ditunjang"]);
-    slipData.push(["Bonus/THR",   num(r.bonus),     policy.bonus?"Ditunjang PPh":"Tdk Ditunjang"]);
+    slipData.push(["Gaji Pokok",  num(r.gajiPokok), r.policyUsed?.gajiPokok?"Ditunjang PPh":"Tdk Ditunjang"]);
+    slipData.push(["Tunjangan",   num(r.tunjangan), r.policyUsed?.tunjangan?"Ditunjang PPh":"Tdk Ditunjang"]);
+    slipData.push(["Lembur",      num(r.lembur),    r.policyUsed?.lembur?"Ditunjang PPh":"Tdk Ditunjang"]);
+    slipData.push(["Bonus/THR",   num(r.bonus),     r.policyUsed?.bonus?"Ditunjang PPh":"Tdk Ditunjang"]);
     slipData.push(["BPJS (pengurang)", -num(r.bpjs),"pengurang neto"]);
     slipData.push(["Tunjangan PPh Perusahaan", r.tunj, "objek pajak tambahan"]);
     slipData.push(["Penghasilan Neto (Basis TER)", r.neto, ""]);
@@ -388,7 +402,11 @@ const ALIAS_FIELDS = [
   { key: "bonus", label: "Bonus / THR / Rapel" },
   { key: "bpjs", label: "BPJS / Iuran Pegawai" },
   { key: "pphSebelumnya", label: "PPh Sudah Dipotong Sebelumnya" },
-  { key: "pphExcel", label: "PPh Excel Pembanding" }
+  { key: "pphExcel", label: "PPh Excel Pembanding" },
+  { key: "gajiPokokD", label: "Override Ditunjang Gaji (Opsional)" },
+  { key: "tunjanganD", label: "Override Ditunjang Tunjangan (Opsional)" },
+  { key: "lemburD", label: "Override Ditunjang Lembur (Opsional)" },
+  { key: "bonusD", label: "Override Ditunjang Bonus (Opsional)" }
 ];
 const REQUIRED_IMPORT_KEYS = ["nama", "status", "gajiPokok"];
 const DEFAULT_ALIAS_TEXT = {
@@ -402,7 +420,11 @@ const DEFAULT_ALIAS_TEXT = {
   bpjs: "bpjs, bpjs tk, bpjs kesehatan, iuran bpjs, potongan bpjs, iuran pegawai",
   tanggungan: "tanggungan, dependent, dependents, jumlah tanggungan",
   pphSebelumnya: "pph sebelumnya, pph sd lalu, pph jan nov, pph terpotong sebelumnya, previous pph, cumulative pph",
-  pphExcel: "pph excel, pph pembanding, pph21 excel, pph 21 excel, compare pph"
+  pphExcel: "pph excel, pph pembanding, pph21 excel, pph 21 excel, compare pph",
+  gajiPokokD: "ditunjang gaji, gaji ditunjang, flag ditunjang gaji, support gaji, tunjang gaji",
+  tunjanganD: "ditunjang tunjangan, tunjangan ditunjang, flag ditunjang tunjangan, support tunjangan",
+  lemburD: "ditunjang lembur, lembur ditunjang, flag ditunjang lembur, support lembur",
+  bonusD: "ditunjang bonus, bonus ditunjang, flag ditunjang bonus, support bonus"
 };
 const ALIAS_TEMPLATE_STORAGE_KEY = "pph21-alias-templates-v1";
 const DEFAULT_ALIAS_TEMPLATES = {
@@ -437,7 +459,11 @@ const newEmp = (id) => ({
   bpjs: "",
   pphSebelumnya: "",
   pphExcel: 0,
-  bulanKerja: 12
+  bulanKerja: 12,
+  gajiPokokD: "",
+  tunjanganD: "",
+  lemburD: "",
+  bonusD: ""
 });
 
 const createInitialEmployees = () =>
@@ -522,6 +548,7 @@ function parseA1Payload(rows) {
     iuranPensiun: findHeaderIndex(headers, ["Iuran Pensiun atau Iuran THT/JHT"]),
     pphSebelumnya: findHeaderIndexPreferred(headers, ["PPh Pasal 21 Jan sd Nov Sudah Dibayar", "PPh Pasal 21 Sebelumnya"]),
     pphExcel: findHeaderIndexPreferred(headers, ["PPh Terutang", "PPh Pasal 21 Terutang"]),
+    flagGajiDitunjang: findHeaderIndex(headers, ["Gaji"]),
   };
 
   const required = ["nama", "statusDasar", "tanggungan", "gajiPokok"];
@@ -538,7 +565,8 @@ function parseA1Payload(rows) {
     ["bonus", idx.bonus],
     ["bpjs", idx.bpjsKesehatan],
     ["pphSebelumnya", idx.pphSebelumnya],
-    ["pphExcel", idx.pphExcel]
+    ["pphExcel", idx.pphExcel],
+    ["gajiPokokD", idx.flagGajiDitunjang]
   ]
     .filter(([, index]) => index !== -1)
     .map(([target, index]) => ({ target, source: String(headers[index] || "") }));
@@ -585,6 +613,7 @@ function parseA1Payload(rows) {
         bulanKerja,
         sumberA1Annual: true,
         tunjanganPphSheet: num(row[idx.tunjanganPphSheet]),
+        gajiPokokD: idx.flagGajiDitunjang !== -1 ? String(row[idx.flagGajiDitunjang] ?? "") : "",
       };
     });
 
@@ -686,7 +715,11 @@ function parseFlexiblePayload(rows, aliasLookup) {
         bpjs: String(num(row[headerIndexes.bpjs])),
         pphSebelumnya: String(num(row[headerIndexes.pphSebelumnya])),
         pphExcel: num(row[headerIndexes.pphExcel]),
-        bulanKerja: Math.max(1, num(row[headerIndexes.bulanKerja] || 12))
+        bulanKerja: Math.max(1, num(row[headerIndexes.bulanKerja] || 12)),
+        gajiPokokD: String(row[headerIndexes.gajiPokokD] ?? ""),
+        tunjanganD: String(row[headerIndexes.tunjanganD] ?? ""),
+        lemburD: String(row[headerIndexes.lemburD] ?? ""),
+        bonusD: String(row[headerIndexes.bonusD] ?? "")
       };
     });
 
@@ -1825,10 +1858,10 @@ export default function App() {
                           )}
                           <div style={{display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginTop: 20}}>
                             {[
-                              ["Gaji Pokok", r.gajiPokok, "money", policy.gajiPokok ? "✅" : "❌"],
-                              ["Tunjangan", r.tunjangan, "money", policy.tunjangan ? "✅" : "❌"],
-                              ["Lembur", r.lembur, "money", policy.lembur ? "✅" : "❌"],
-                              ["Bonus/THR", r.bonus, "money", policy.bonus ? "✅" : "❌"],
+                              ["Gaji Pokok", r.gajiPokok, "money", r.policyUsed?.gajiPokok ? "✅" : "❌"],
+                              ["Tunjangan", r.tunjangan, "money", r.policyUsed?.tunjangan ? "✅" : "❌"],
+                              ["Lembur", r.lembur, "money", r.policyUsed?.lembur ? "✅" : "❌"],
+                              ["Bonus/THR", r.bonus, "money", r.policyUsed?.bonus ? "✅" : "❌"],
                               ["BPJS", r.bpjs, "money", "➖"],
                               ["Tunjangan PPh", r.tunj, "signed", "🏢"],
                               [r.isAnnual || r.isFinal ? "PKP Setahun" : "Neto Basis TER", r.isAnnual || r.isFinal ? r.pkp : r.neto, "money", "📊"],
