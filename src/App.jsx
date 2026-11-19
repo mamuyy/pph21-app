@@ -422,9 +422,9 @@ const DEFAULT_ALIAS_TEXT = {
   tanggungan: "tanggungan, dependent, dependents, jumlah tanggungan, jumlahtanggungan",
   pphSebelumnya: "pph sebelumnya, pph sd lalu, pph jan nov, pph terpotong sebelumnya, previous pph, cumulative pph, pphsebelumnya, pph_sebelumnya",
   pphExcel: "pph excel, pph pembanding, pph21 excel, pph 21 excel, compare pph, pphexcel, pph_excel",
-  tunjanganPphSheet: "tunjangan pph, sumbertunjanganpph, tunjanganpphsheet, tunjangan_pph_sheet",
+  tunjanganPphSheet: "tunjangan pph, tunjangan pph tahunan, tunjangan pph setahun, sumbertunjanganpph, tunjanganpphsheet, tunjangan_pph_sheet",
   gajiPokokD: "ditunjang gaji, gaji ditunjang, flag ditunjang gaji, support gaji, tunjang gaji, gaji, gajipokokd, gaji_pokok_d",
-  tunjanganD: "ditunjang tunjangan, tunjangan ditunjang, flag ditunjang tunjangan, support tunjangan, tunjangan pph, tunjangand, tunjangan_d",
+  tunjanganD: "ditunjang tunjangan, tunjangan ditunjang, flag ditunjang tunjangan, support tunjangan, tunjangan pph ditunjang, ditunjang pph, tunjangand, tunjangan_d",
   lemburD: "ditunjang lembur, lembur ditunjang, flag ditunjang lembur, support lembur, tunjangan lainnya lembur, lemburd, lembur_d",
   bonusD: "ditunjang bonus, bonus ditunjang, flag ditunjang bonus, support bonus, bonus ditunjang pph, bonusd, bonus_d"
 };
